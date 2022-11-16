@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="my-4">Add Feeding</h2>
+<form method="POST" id="feedForm">
+    <input type="radio" class="btn-check method" name="method" id="bottle" autocomplete="off" value="bottle" checked />
+    <label class="btn btn-outline-secondary radioLabel" for="bottle">Bottle</label>
+
+    <input type="radio" class="btn-check method" name="method" id="nursing" autocomplete="off" value="nursing" />
+    <label class="btn btn-outline-secondary radioLabel" for="nursing">Nursing</label>
+
+    <div class="form-floatin row mt-3">
+        <div class="col">
+            <label for="fed_at">Start Time:</label>
+        </div>
+        <div class="col">
+            <input class="form-control" type="datetime-local" name="fed_at" id="fed_at" placeholder="1">
+        </div>
+    </div>
+
+        <div class="bottleDiv">
+            <label for="amount" class="form-label">Amount:</label>
+            <input type="range" name="amount" id="amount" class="form-range" step="0.25" min="1" max="12"
+                oninput="this.nextElementSibling.value = this.value" />
+            <output>6.5</output><span> oz</span>
+        </div>
+        <div class="nursingDiv row mt-2" style="display: none">
+            <div class="col">
+                <label for="amount" class="form-label">Duration (mins):</label>
+            </div>
+            <div class="col">
+                <input type="number" name="duration" id="duration" class="form-control" step="1" min="1" max="60">
+            </div>
+        </div>
+    <button class="btn btn-success btn-lg form-control mt-3">Save</button>
+</form>
+<script src="/static/feeds.js"></script>
+{% endblock %}

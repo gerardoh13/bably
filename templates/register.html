@@ -1,0 +1,52 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="tab needs-validation">
+    <h4 class="my-5">How shall we refer to your child?</h4>
+
+    <div class="form-floating">
+        <input class="form-control" id="cFirstName" name="cFirstName" placeholder="Child's First Name" required
+            type="text"/>
+        <label for="cFirstName">Child's First Name</label>
+        <div class="invalid-feedback">
+            Please enter your child's name.
+          </div>
+    </div>
+    <hr class="my-4" />
+    <input type="radio" class="btn-check gender" name="gender" id="boy" autocomplete="off" value="male" required/>
+    <label class="btn btn-outline-secondary" for="boy"><i class="bi bi-gender-male"></i> Boy</label>
+
+    <input type="radio" class="btn-check gender" name="gender" id="girl" autocomplete="off" value="female" />
+    <label class="btn btn-outline-secondary" for="girl"><i class="bi bi-gender-female"></i> Girl</label>
+    <div class="invalid-feedback">
+        Please select your child's gender.
+      </div>
+</div>
+
+<div class="tab needs-validation">
+    <h2 class="my-5">What is your child's date of birth?</h2>
+    <p>We use this information to provide age-appropriate guidance.</p>
+    <input class="form-control" type="date" name="dob" id="dob" required/>
+    <div class="invalid-feedback">
+        Please enter your child's date of birth.
+      </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <button class="btn btn-success mt-3 form-control" id="prevBtn" onclick="nextPrev(-1)">
+            Previous
+        </button>
+    </div>
+    <div class="col">
+        <button class="btn btn-success mt-3 form-control" id="nextBtn" onclick="nextPrev(1)">
+            Next
+        </button>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 40px">
+    <span class="step"></span>
+    <span class="step"></span>
+</div>
+<script src="/static/register.js"></script>
+{% endblock %}

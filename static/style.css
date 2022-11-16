@@ -1,0 +1,81 @@
+body {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(187,210,197,1) 0%, rgba(83,105,118,1) 100%);
+    background-attachment: fixed;
+}
+
+input {
+    margin-bottom: 10px;
+}
+
+
+#regForm {
+    background-color: #ffffff;
+    margin: 100px auto;
+    padding: 40px;
+    width: 70%;
+    min-width: 300px;
+  }
+  
+  input {
+    padding: 10px;
+    width: 100%;
+    font-size: 17px;
+    font-family: Raleway;
+    border: 1px solid #aaaaaa;
+  }
+  
+  input.invalid {
+    background-color: #ffdddd;
+  }
+  
+  .tab {
+    display: none;
+  }
+  
+  .step {
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    background-color: #bbbbbb;
+    border: none;
+    border-radius: 50%;
+    display: inline-block;
+    opacity: 0.5;
+  }
+  
+  .step.active {
+    opacity: 1;
+  }
+  
+  .step.finish {
+    background-color: #04AA6D;
+  }
+
+  .homeCard {
+    width: 100%;
+  }
+
+  .cards {
+    margin-top: 50%;
+  }
+
+  .cardLink {
+    color: white;
+    text-decoration: none;
+  }
+
+  .cardLink:hover {
+    color: white;
+  }
+
+  .btn-check {
+    position: fixed;
+  }
+
+  .radioLabel {
+    width: 49%;
+  }

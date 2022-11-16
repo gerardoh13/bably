@@ -1,0 +1,16 @@
+{% extends 'base.html' %} 
+{% block content %}
+    
+    <div class="justify-content-center">
+        <h2 class="my-4 light">Let's Get Started</h2>
+        <p class="mb-5 light">Create an account with email to login from anywhere.</p>
+        <form method="POST">
+          {{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
+          'hidden' %} {% include "base-form.html" %} {% endfor %}
+    
+          <button class="btn btn-success btn-lg form-control mt-3">Sign up</button>
+        </form>
+        <p class="light mt-5">Already have an account? <a href="/login">Login</a></p>
+    </div>
+{% endblock %}
+    
