@@ -7,6 +7,8 @@ from functools import wraps
 from sqlalchemy.sql import func
 from forms import UserAddForm, LoginForm
 from models import db, connect_db, User, Infant, Feed
+from sqlalchemy import desc
+from datetime import datetime, time
 
 CURR_USER_KEY = "curr_user"
 CURR_INFANT_KEY = "curr_infant"
@@ -98,8 +100,13 @@ def homepage():
     if g.user:
         if not g.infant:
             return render_template("register.html")
-
-        return render_template('home.html')
+        last_midnight = datetime.combine(datetime.today(), time.min).timestamp()
+        next_midnight = datetime.combine(datetime.today(), time.max).timestamp()
+        feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).limit(3).all()
+        bottle_amts = [feed.amount for feed in feeds if feed.method == "bottle"]
+        nursing_feeds = [feed for feed in feeds if feed.method == "nursing"]
+ 
+        return render_template('home.html', feeds=feeds, total_oz=sum(bottle_amts), nursing_count=len(nursing_feeds))
 
     else:
         return redirect('/signup')
@@ -137,12 +144,13 @@ def register_infant():
     new_infant = Infant(
         first_name=request.json["first_name"],
         dob=request.json["dob"],
-        gender=request.json["gender"],
-        user_id=g.user.id
+        gender=request.json["gender"]
     )
     db.session.add(new_infant)
+    g.user.infants.append(new_infant)
     db.session.commit()
     add_infant(new_infant)
+
     response_json = jsonify(infant=new_infant.serialize())
     return (response_json, 201)
 
@@ -155,6 +163,7 @@ def show_feed_form():
             method=data.get("method"),
             fed_at=data.get("fed_at"),
             amount=data.get("amount", None),
+            duration=data.get("duration", None),
             infant_id=g.infant.id
         )
         db.session.add(new_feed)
@@ -164,16 +173,26 @@ def show_feed_form():
     else:
         return render_template("feeds.html")
 
-# @app.route('/api/feeds', methods=["POST"])
-# @login_required
-# def add_feed():
-#     new_infant = Infant(
-#         first_name=request.json["first_name"],
-#         dob=request.json["dob"],
-#         gender=request.json["gender"],
-#         user_id=g.user.id
-#     )
-#     db.session.add(new_infant)
-#     db.session.commit()
-#     add_infant(new_infant)
-#     response_json = jsonify(infant=new_infant.serialize())
+# @app.route('/register')
+# def show_registration():
+#     return render_template('register.html')
+
+@app.route('/calendar')
+def show_calendar():
+    return render_template('calendar.html')
+
+@app.route('/feed/<int:feed_id>')
+def show_feed(feed_id):
+    feed = Feed.query.get_or_404(feed_id)
+    return render_template('feed.html', feed=feed)
+
+def show_calendar():
+    return render_template('calendar.html')
+
+@app.route("/api/events")
+def fetch_feeds():
+    start = datetime.fromisoformat(request.args.get("start")).timestamp()
+    end = datetime.fromisoformat(request.args.get("end")).timestamp()
+    feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at > start).filter(Feed.fed_at < end).all()
+    response_json = [feed.serialize() for feed in feeds]
+    return(response_json, 201)

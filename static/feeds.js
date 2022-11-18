@@ -18,14 +18,14 @@ for (let i = 0; i < radios.length; i++){
 document.getElementById('feedForm').addEventListener("submit", async (e) => {
     e.preventDefault()
     method = document.querySelector('input[name="method"]:checked').value
-    let fed_at = new Date(document.getElementById('fed_at').value).getTime()
+    let fed_at = (new Date(document.getElementById('fed_at').value).getTime()) / 1000
     if (method == "bottle"){
         let amount = parseFloat(document.getElementById("amount").value)
         newFeed = {fed_at, amount, method}
     } else {
-        return
+        let duration = parseFloat(document.getElementById("duration").value)
+        newFeed = {fed_at, duration, method}
     }
-    console.log(newFeed)
     const newFeedRes = await axios.post("/feeds", {...newFeed})
     if (newFeedRes.status === 201){
         location.href = "/"

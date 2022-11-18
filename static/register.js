@@ -8,6 +8,7 @@ function showTab(n) {
         document.getElementById("prevBtn").style.display = "none";
     } else {
         document.getElementById("prevBtn").style.display = "inline";
+        document.getElementById("name").innerText = document.getElementById("cFirstName").value.trim()
     }
     if (n == (x.length - 1)) {
         document.getElementById("nextBtn").innerHTML = "Submit";
@@ -35,9 +36,12 @@ function validateForm() {
     y = x[currentTab].getElementsByTagName("input");
     r = x[currentTab].getElementsByClassName("gender")
     for (i = 0; i < y.length; i++) {
-        if (y[i].value == "") {
-            x[currentTab].classList.add("was-validated")
-            valid = false;
+        if (y[i].type !== "file") {
+            if (y[i].value.trim() == "") {
+                y[i].value = ""
+                x[currentTab].classList.add("was-validated")
+                valid = false;
+            }
         }
     }
     if (r.length > 0) {
@@ -60,7 +64,7 @@ function fixStepIndicator(n) {
 }
 
 async function submitChildReg() {
-    let first_name = document.getElementById("cFirstName").value
+    let first_name = document.getElementById("cFirstName").value.trim()
     let gender = document.querySelector('input[name="gender"]:checked').value;
     let dob = document.getElementById("dob").value
 
@@ -69,7 +73,7 @@ async function submitChildReg() {
         gender,
         dob
     });
-    if (newChildRes.status === 201){
+    if (newChildRes.status === 201) {
         location.href = "/"
     }
 }
