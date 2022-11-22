@@ -21,7 +21,12 @@
     <nav class="navbar navbar-dark bg-dark fixed-top mb-5">
         <div class="container-fluid">
             {% if g.infant %}
-            <a class="navbar-brand" href="/">{{ g.infant.first_name }}</a>
+            <a class="navbar-brand" href="/profile">
+                {% if g.infant.public_id %}
+                <img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" height="30" class="d-inline-block align-text-top navImg">
+                {% endif %}
+                {{ g.infant.first_name }}
+            </a>
             {% else %}
             <a class="navbar-brand" href="/">Bably</a>
             {% endif %}
@@ -41,24 +46,16 @@
                 <div class="offcanvas-body">
                     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
+                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/feeds">Feeding</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/calendar">Calendar</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/logout">Sign Out</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                Dropdown
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
                         </li>
                     </ul>
                 </div>
@@ -71,6 +68,19 @@
         {% endfor %}
         {% block content %} {% endblock %}
     </div>
+    <!-- --------------------------------------------------- -->
+    <script src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"></script>
+    <script>
+        // const beamsClient = new PusherPushNotifications.Client({
+        //   instanceId: 'bee9563f-0b10-4988-9277-493e97d98be5',
+        // });
+      
+        // beamsClient.start()
+        //   .then(() => beamsClient.addDeviceInterest('hello'))
+        //   .then(() => console.log('Successfully registered and subscribed!'))
+        //   .catch(console.error);
+      </script>
+      <!-- --------------------------------------------------------- -->
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
 </body>
 

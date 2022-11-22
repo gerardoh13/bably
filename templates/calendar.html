@@ -2,5 +2,50 @@
 {% block content %}
 
 <div id='calendar'></div>
+<!-- Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="eventModalLabel"></h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedForm">
+                    <input type="hidden" name="evtId" id="evtId">
+                    <input type="hidden" name="method" id="method">
+                    <div class="form-floatin row mt-3">
+                        <div class="col">
+                            <label for="fed_at">Start Time:</label>
+                        </div>
+                        <div class="col">
+                            <input class="form-control" type="datetime-local" name="fed_at" id="fed_at">
+                        </div>
+                    </div>
+
+                    <div id="bottleDiv">
+                        <label for="amount" class="form-label">Amount:</label>
+                        <input type="range" name="amount" id="amount" class="form-range" step="0.25" min="1" max="12"
+                            oninput="this.nextElementSibling.value = this.value" />
+                        <output id="output">6.5</output><span> oz</span>
+                    </div>
+                    <div id="nursingDiv" class="row mt-2">
+                        <div class="col">
+                            <label for="amount" class="form-label">Duration (mins):</label>
+                        </div>
+                        <div class="col">
+                            <input type="number" name="duration" id="duration" class="form-control" step="1" min="1"
+                                max="60">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="delEvt" class="btn btn-danger">Delete</button>
+                <button id="editEvt" type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="/static/calendar.js"></script>
 {% endblock %}

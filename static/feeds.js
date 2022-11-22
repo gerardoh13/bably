@@ -1,16 +1,16 @@
 radios = document.getElementsByClassName("method")
-
 for (let i = 0; i < radios.length; i++){
     radios[i].addEventListener('change', () => {
         checked = document.querySelector('input[name="method"]:checked').value
-        console.log(checked)
-        if (checked == "nursing"){
+        if (checked === "nursing"){
             $(".bottleDiv").hide()
             $(".nursingDiv").show()
+            document.getElementById("duration").required = true
 
         } else {
             $(".nursingDiv").hide()
             $(".bottleDiv").show()
+            document.getElementById("duration").required = false
         }
     })
 }

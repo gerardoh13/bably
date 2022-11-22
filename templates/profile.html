@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if g.infant.public_id %}
+<img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" class="profileImg rounded-5">
+{% else %}
+<img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" class="profileImg rounded-5">
+{% endif %}
+<br>
+<!-- <button class="btn btn-info mt-2">Edit Photo</button> -->
+<h2 class="mt-2">{{ g.infant.first_name }} is {{ g.infant.age }} old!</h2>
+
+<h3>Milestones at this age:</h3>
+<div class="milestones text-start">
+    <h4>Social/Emotional</h4>
+    <ul>
+        <li>Calms down when spoken to or picked up</li>
+        <li>Looks at your face</li>
+        <li>Seems happy to see you when you walk up to her</li>
+        <li>Smiles when you talk to or smile at her</li>
+    </ul>
+    <h4>Language/Communication</h4>
+    <ul>
+        <li>Makes sounds other than crying</li>
+        <li>Reacts to loud sounds</li>
+    </ul>
+    <h4>Cognitive Milestones</h4>
+    <ul>
+        <li>Watches you as you move</li>
+        <li>Looks at a toy for several seconds</li>
+    </ul>
+    <h4>Movement/Physical</h4>
+    <ul>
+        <li>Holds head up when on tummy</li>
+        <li>Moves both arms and both legs</li>
+        <li>Opens hands briefly</li>
+    </ul>
+</div>
+
+{% endblock %}
+

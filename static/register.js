@@ -1,3 +1,5 @@
+const CLOUDINARY_API = "https://api.cloudinary.com/v1_1/${dolnu62zm}/upload"
+
 let currentTab = 0;
 showTab(currentTab);
 
@@ -67,13 +69,38 @@ async function submitChildReg() {
     let first_name = document.getElementById("cFirstName").value.trim()
     let gender = document.querySelector('input[name="gender"]:checked').value;
     let dob = document.getElementById("dob").value
-
-    const newChildRes = await axios.post("/api/infants", {
-        first_name,
-        gender,
-        dob
-    });
+    let public_id = document.getElementById('public_id').value
+    let newInfant = {first_name, gender, dob}
+    console.log(public_id)
+    if (public_id) {
+        newInfant.public_id = public_id
+    }
+    const newChildRes = await axios.post("/api/infants", {...newInfant});
     if (newChildRes.status === 201) {
         location.href = "/"
     }
 }
+
+document.getElementById('fileForm').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    let fileInput = document.getElementById('formFile')
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0])
+    document.getElementById("uploadBtn").innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...`
+    let uploadRes = await axios.post("/upload", formData)
+    console.log(uploadRes.data)
+    console.log(uploadRes)
+    if (uploadRes.status === 200) {
+        let public_id = uploadRes.data.public_id
+        let imgSrc = uploadRes.data.secure_url
+        document.getElementById('babyPic').setAttribute("src", imgSrc)
+        document.getElementById('public_id').value = public_id
+        document.getElementById("picName").innerText = `Looking good, ${document.getElementById("cFirstName").value.trim()}!`
+        $('#uploadForm').hide()
+        $('#uploadSuccess').show()
+    } else {
+        console.log("oops! something went wrong")
+        $('#uploadForm').show()
+        $('#uploadSuccess').hide()
+    }
+})

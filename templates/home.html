@@ -39,7 +39,7 @@
   <tbody>
     {% for feed in feeds %}
     <tr>
-      <th scope="row">{{ feed.timestamp }}</th>
+      <th scope="row">{{ feed.date }}</th>
       <td>{{ feed.method }}</td>
       {% if feed.method == 'bottle' %}
       <td>{{ feed.amount }} oz</td>
@@ -51,7 +51,9 @@
   </tbody>
 </table>
 {% else %}
+<hr>
 <h4 class="my-3">Log {{ g.infant.first_name }}'s feeds to see your latest activity here!</h4>
+<hr>
 {% endif %}
 <!-- **************************************** -->
 <div class="card text-bg-primary mb-3">

@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from dateutil import relativedelta
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -50,6 +51,7 @@ class Infant(db.Model):
     first_name = db.Column(db.String(20), nullable=False)
     dob = db.Column(db.Date, nullable=False)
     gender = db.Column(db.String(6), nullable=False)
+    public_id = db.Column(db.Text)
 
     def __repr__(self):
         return f"<Infant #{self.id}: {self.first_name}, {self.dob}>"
@@ -59,8 +61,25 @@ class Infant(db.Model):
             "id": self.id,
             "first_name": self.first_name,
             "dob": self.dob,
-            "gender": self.gender
+            "gender": self.gender,
+            "public_id": self.public_id
         }
+    def get_age(self):
+        delta = relativedelta.relativedelta(date.today(), self.dob)
+        years = delta.years
+        months = delta.months
+        days = delta.days
+        if years and not months:
+            age = f"{years} year{'s' if years > 1 else ''}"
+        elif years and months:
+            age = f"{years} year{'s' if years > 1 else ''}, {months} month{'s' if months > 1 else ''}"
+        elif months and not years:
+            age = f"{months} month{'s' if months > 1 else ''}"
+        else:
+            age = f"{days} day{'s' if days > 1 else ''}"
+        return age
+        
+    age = property(fget=get_age)
 
 class Feed(db.Model):
     """Feed class"""
@@ -78,6 +97,20 @@ class Feed(db.Model):
         return f"<Feed #{self.id}: {self.method}, User#{self.infant_id}>"
 
     def serialize(self):
+        feed = {
+            "id": self.id,
+            "method": self.method,
+            "fed_at": self.fed_at,
+            "datetime": datetime.fromtimestamp(self.fed_at).isoformat()
+        }
+        if self.method == "bottle":
+            feed["amount"] = self.amount
+        else: 
+            feed["duration"] = self.duration
+        return feed
+
+
+    def serialize_event(self):
         if self.method == "bottle":
             title = f"{self.method} feed, {self.amount} oz"
         else:
@@ -89,13 +122,13 @@ class Feed(db.Model):
             "ts": self.fed_at
         }
     
-    def to_timestamp(self):
+    def to_date(self):
         """convert epoch to datetime"""         
         ts = datetime.fromtimestamp(self.fed_at)
         return ts.strftime("%-m/%-d/%Y %-I:%M %p")
 
+    date = property(fget=to_date)
 
-    timestamp = property(fget=to_timestamp)
 
 class UserInfant(db.Model):
     """UserInfant class"""
