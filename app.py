@@ -2,8 +2,11 @@ import cloudinary.uploader
 import cloudinary.api
 import cloudinary
 import os
-from datetime import datetime, time
+
+from flask_apscheduler import APScheduler
+from datetime import datetime, time, timedelta
 from functools import wraps
+
 
 from pusher_push_notifications import PushNotifications
 from dotenv import load_dotenv
@@ -31,6 +34,12 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "CATS_ARE_COOL")
 # toolbar = DebugToolbarExtension(app)
 
+scheduler = APScheduler()
+scheduler.api_enabled = True
+scheduler.init_app(app)
+scheduler.start()
+
+
 cloudinary.config(cloud_name=os.getenv('CLOUD_NAME'), api_key=os.getenv('CLOUDINARY_API_KEY'),
                       api_secret=os.getenv('CLOUDINARY_API_SECRET'))
 
@@ -38,7 +47,6 @@ beams_client = PushNotifications(
     instance_id=os.getenv('PUSHER_INSTANCE_ID'),
     secret_key=os.getenv('PUSHER_SECRET_KEY')
 )
-
 connect_db(app)
 
 # ---------------------------------------------MISC------------------------------------------------
@@ -89,15 +97,16 @@ def do_logout():
 def service_worker():
     """serve service worker file"""
     return send_file('static/service-worker.js')
-@app.route("/test_pusher")
-def test_pusher():
+
+# @app.route("/test_pusher")
+def test_pusher(message):
     response = beams_client.publish_to_interests(
         interests=['hello'],
         publish_body={
             'web': {
                 'notification': {
-                    'title': 'Hello',
-                    'body': 'Hello, World!'
+                    'title': 'Bably says:',
+                    'body': message
                 }
             }
         }
@@ -228,9 +237,9 @@ def show_feed_form():
     else:
         return render_template("feeds.html")
 
-@app.route('/register')
-def show_registration():
-    return render_template('register.html')
+# @app.route('/register')
+# def show_registration():
+#     return render_template('register.html')
 
 
 @app.route('/api/feeds/<int:feed_id>')
@@ -271,7 +280,15 @@ def update_cupcakes(feed_id):
 @app.route('/calendar')
 @login_required
 def show_calendar():
-    test_pusher()
+    # test_pusher()
+    # date_and_time = datetime.now()
+    # time_change = timedelta(minutes=1)
+    # new_time = date_and_time + time_change 
+
+    # scheduler.add_job(id="1", func=test_pusher, trigger='date', run_date=new_time)
+    print('***********************************')
+    print(__name__)
+
     return render_template('calendar.html')
 
 
@@ -295,6 +312,7 @@ def fetch_feeds():
 
 @app.route("/upload", methods=['POST'])
 # @cross_origin()
+@login_required
 def upload_file():
     app.logger.info('in upload route')
     upload_result = None
@@ -303,3 +321,7 @@ def upload_file():
         if file_to_upload:
             upload_result = cloudinary.uploader.upload(file_to_upload)
             return jsonify(upload_result)
+
+@app.route("/reminders")
+def show_reminders():
+    return render_template("reminders.html")
