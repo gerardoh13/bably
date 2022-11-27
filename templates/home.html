@@ -20,13 +20,11 @@
         <h2 class="card-title">{{ nursing_count }}</h2>
       </div>
       <div class="card-footer">
-        <p>Total Breast Feeds</p>
+        <p>Nursing Feeds</p>
       </div>
     </div>
   </div>
 </div>
-
-
 
 <table class="table table-striped text-start">
   <thead>
@@ -39,7 +37,7 @@
   <tbody>
     {% for feed in feeds %}
     <tr>
-      <th scope="row">{{ feed.date }}</th>
+      <td>{{ feed.date }}</td>
       <td>{{ feed.method }}</td>
       {% if feed.method == 'bottle' %}
       <td>{{ feed.amount }} oz</td>
@@ -48,6 +46,29 @@
       {% endif %}
     </tr>
     {% endfor %}
+    {% if more %}
+    <tr id="showMore">
+      <th scope="row">+ {{more|length}} more</th>
+      <td></td>
+      <td></td>
+    </tr>
+    {% for feed in more %}
+    <tr class ="hidden" style="display: none">
+      <td>{{ feed.date }}</td>
+      <td>{{ feed.method }}</td>
+      {% if feed.method == 'bottle' %}
+      <td>{{ feed.amount }} oz</td>
+      {% else %}
+      <td>{{ feed.duration }} mins</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+    <tr id="hideMore" class="hidden" style="display: none">
+      <th scope="row">Hide</th>
+      <td></td>
+      <td></td>
+    </tr>
+    {% endif %}
   </tbody>
 </table>
 {% else %}
@@ -64,13 +85,13 @@
   </a>
 </div>
 
-<div class="card text-bg-success mb-3">
-  <a class="cardLink" href="/feeds">
+<!-- <div class="card text-bg-success mb-3">
+  <a class="cardLink" href="/diapers">
     <div class="card-body">
       <h5 class="card-title">Diaper</h5>
     </div>
   </a>
-</div>
+</div> -->
 
 <div class="card text-bg-info mb-3">
   <a class="cardLink" href="/reminders">
@@ -80,12 +101,38 @@
   </a>
 </div>
 
-<div class="card text-bg-danger mb-3">
+<div class="card text-bg-success mb-3">
   <a class="cardLink" href="/calendar">
     <div class="card-body">
       <h5 class="card-title">Calendar</h5>
     </div>
   </a>
 </div>
+<script src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"></script>
+<script src="/static/push-notifications.js"></script>
+<script>
+let showMore = document.getElementById("showMore")
+if (showMore){
+  showMore.addEventListener('click', () => {
+$('#showMore').hide()
+let hiddenRows = document.getElementsByClassName("hidden")
+for (let row of [...hiddenRows]){
+  row.style.display = ""
+}
+$('#moreDiv').show()
+})
+} 
+let hideMore = document.getElementById("hideMore")
+if (hideMore) {
+  hideMore.addEventListener('click', () => {
+  $('#showMore').show()
+let hiddenRows = document.getElementsByClassName("hidden")
+for (let row of [...hiddenRows]){
+  row.style.display = "none"
+}
+$('#moreDiv').show()
+})
+}
 
+</script>
 {% endblock %}

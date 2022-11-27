@@ -48,14 +48,19 @@
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="/">Home</a>
                         </li>
+                        {% if g.infant %}
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="/feeds">Feeding</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/calendar">Calendar</a>
+                            <a class="nav-link active" aria-current="page" href="/reminders">Reminders</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout">Sign Out</a>
+                            <a class="nav-link active" aria-current="page" href="/calendar">Calendar</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a id="logout" class="nav-link" href="/logout">Sign Out</a>
                         </li>
                     </ul>
                 </div>
@@ -68,19 +73,6 @@
         {% endfor %}
         {% block content %} {% endblock %}
     </div>
-    <!-- --------------------------------------------------- -->
-    <script src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"></script>
-    <script>
-        // const beamsClient = new PusherPushNotifications.Client({
-        //   instanceId: 'bee9563f-0b10-4988-9277-493e97d98be5',
-        // });
-      
-        // beamsClient.start()
-        //   .then(() => beamsClient.addDeviceInterest('hello'))
-        //   .then(() => console.log('Successfully registered and subscribed!'))
-        //   .catch(console.error);
-      </script>
-      <!-- --------------------------------------------------------- -->
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
 </body>
 

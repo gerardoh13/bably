@@ -1,40 +1,88 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if g.infant.public_id %}
-<img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" class="profileImg rounded-5">
+<img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic"
+    class="profileImg rounded-5">
 {% else %}
-<img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" class="profileImg rounded-5">
+<img src="https://as1.ftcdn.net/v2/jpg/01/28/56/34/1000_F_128563455_bGrVZnfDCL0PxH1sU33NpOhGcCc1M7qo.jpg" alt="baby pic"
+    class="profileImg rounded-5">
 {% endif %}
 <br>
-<!-- <button class="btn btn-info mt-2">Edit Photo</button> -->
-<h2 class="mt-2">{{ g.infant.first_name }} is {{ g.infant.age }} old!</h2>
+<h2 id="age" class="mt-2" data-gender="{{ g.infant.gender }}" data-months="{{ g.infant.months }}">{{ g.infant.first_name }} is {{ g.infant.age }} old!</h2>
+<button class="btn btn-info mt-2" data-bs-toggle="modal" data-bs-target="#profileModal">Edit Profile</button>
+<div id="milestones" class="text-start mt-2"></div>
+<!-- -------------Modal--------------- -->
+<div class="modal fade" id="profileModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="profileModalLabel">Edit Infant Profile</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="uploadForm">
+                    {% if g.infant.public_id %}
+                    <img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic"
+                        class="editImg rounded-5">
+                        <br>
+                        {% else %}
+                        <small class="mb-2">(Optional) Would you like to add a photo of {{ g.infant.first_name }}?</small>
+                    {% endif %}
+                    <form id="fileForm">
+                        <input class="form-control mt-2" type="file" id="formFile">
+                        <button id="uploadBtn" class="btn btn-primary form-control mt-2 mb-3">Upload</button>
+                    </form>
+                </div>
+                <div id="uploadSuccess" style="display: none">
+                    <img id="babyPhoto" src="" alt="your baby's photo" class="editImg rounded-5 mb-3">
+                    <input type="hidden" name="public_id" id="public_id">
+                    {% if g.infant.public_id %}
+                    <small>Looking good!</small>
+                    {% else %}
+                    <br>
+                    <small>Please click save to keep changes </small>
+                    {% endif %}
+                </div>
+                <form id="profileForm" class="needs-validating">
+                    <div class="form-floating mb-3">
+                        <input class="form-control" id="cFirstName" name="cFirstName" placeholder="Child's First Name"
+                            required type="text" value="{{ g.infant.first_name }}" />
+                        <label for="cFirstName">Child's First Name</label>
+                        <div class="invalid-feedback">
+                            Please enter your child's name.
+                        </div>
+                    </div>
+                    {% if g.infant.gender == "male"%}
+                    <input type="radio" class="btn-check gender" name="gender" id="boy" autocomplete="off" value="male"
+                        required checked />
+                    <label class="btn btn-outline-secondary" for="boy"><i class="bi bi-gender-male"></i> Boy</label>
+                    <input type="radio" class="btn-check gender" name="gender" id="girl" autocomplete="off"
+                        value="female" />
+                    <label class="btn btn-outline-secondary" for="girl"><i class="bi bi-gender-female"></i> Girl</label>
+                    {% else %}
+                    <input type="radio" class="btn-check gender" name="gender" id="boy" autocomplete="off" value="male"
+                        required />
+                    <label class="btn btn-outline-secondary" for="boy"><i class="bi bi-gender-male"></i> Boy</label>
+                    <input type="radio" class="btn-check gender" name="gender" id="girl" autocomplete="off"
+                        value="female" checked />
+                    <label class="btn btn-outline-secondary" for="girl"><i class="bi bi-gender-female"></i> Girl</label>
+                    {% endif %}
 
-<h3>Milestones at this age:</h3>
-<div class="milestones text-start">
-    <h4>Social/Emotional</h4>
-    <ul>
-        <li>Calms down when spoken to or picked up</li>
-        <li>Looks at your face</li>
-        <li>Seems happy to see you when you walk up to her</li>
-        <li>Smiles when you talk to or smile at her</li>
-    </ul>
-    <h4>Language/Communication</h4>
-    <ul>
-        <li>Makes sounds other than crying</li>
-        <li>Reacts to loud sounds</li>
-    </ul>
-    <h4>Cognitive Milestones</h4>
-    <ul>
-        <li>Watches you as you move</li>
-        <li>Looks at a toy for several seconds</li>
-    </ul>
-    <h4>Movement/Physical</h4>
-    <ul>
-        <li>Holds head up when on tummy</li>
-        <li>Moves both arms and both legs</li>
-        <li>Opens hands briefly</li>
-    </ul>
+                    <div class="invalid-feedback">
+                        Please select your child's gender.
+                    </div>
+
+                    <input class="form-control mt-3" type="date" name="dob" id="dob" required
+                        value="{{ g.infant.dob }}" />
+                    <div class="invalid-feedback">
+                        Please enter your child's date of birth.
+                    </div>
+                    <button id="editEvt" class="btn btn-primary float-end mt-3">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-
+<script src="/static/milestones.js"></script>
 {% endblock %}
-

@@ -1,15 +1,13 @@
 let calendarEl = document.getElementById('calendar');
 let lastClicked
 
-// function eContent(info){
-//   console.log(info.event)
-//   if (calendar.view.type === "dayGridMonth"){
-//     if (!info.event._def.allDay){
-//       let span = document.createElement('span')
-//       return span
-//     }
-//   }
-// }
+function eContent(info){
+  if (calendar.view.type === "dayGridMonth"){
+    if (!info.event._def.allDay){
+      return ""
+    } 
+  }
+}
 let calendar = new FullCalendar.Calendar(calendarEl, {
   height: "auto",
   themeSystem: 'bootstrap5',
@@ -23,7 +21,8 @@ let calendar = new FullCalendar.Calendar(calendarEl, {
       titleFormat: { year: 'numeric', month: 'short' },
   },
     day: {
-      titleFormat: { year: 'numeric', month: 'short', day: 'numeric' }
+      titleFormat: { year: 'numeric', month: 'short', day: 'numeric' },
+      allDaySlot: false
     },
   },
   headerToolbar: {
@@ -38,7 +37,6 @@ let calendar = new FullCalendar.Calendar(calendarEl, {
     }
   },
   eventClick: function (info) {
-    console.log(info)
     let title = info.event._def.title
     if (title.includes("bottle") || title.includes("nursing")) {
       lastClicked = info.el
@@ -46,10 +44,12 @@ let calendar = new FullCalendar.Calendar(calendarEl, {
     }
   },
   // dayMaxEvents: 1,
-  // eventContent: eContent,
+  eventContent: eContent,
   events: {
     url: '/api/events',
-    // display: 'background'
+    display: 'list-item',
+    backgroundColor: '#66bdb8'
+
   },
   
 });

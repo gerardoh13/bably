@@ -23,7 +23,7 @@ document.getElementById('feedForm').addEventListener("submit", async (e) => {
         let amount = parseFloat(document.getElementById("amount").value)
         newFeed = {fed_at, amount, method}
     } else {
-        let duration = parseFloat(document.getElementById("duration").value)
+        let duration = parseInt(document.getElementById("duration").value)
         newFeed = {fed_at, duration, method}
     }
     const newFeedRes = await axios.post("/feeds", {...newFeed})
@@ -37,5 +37,8 @@ window.addEventListener('load', () => {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
       now.setMilliseconds(null)
     now.setSeconds(null)
-    document.getElementById('fed_at').value = now.toISOString().slice(0, -1);
+    let currTime = now.toISOString().slice(0, -1)
+    let dtInput = document.getElementById('fed_at')
+    dtInput.setAttribute("max", currTime)
+    dtInput.value = currTime;
   });

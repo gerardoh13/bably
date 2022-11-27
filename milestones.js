@@ -1,3 +1,0 @@
-function getMilestone (age, gender){
-    
-}

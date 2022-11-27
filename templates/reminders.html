@@ -1,21 +1,112 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 class="my-4">Add a Reminder</h2>
-<form  id="reminderForm">
+<h2 class="my-4">Feed Reminders</h2>
+<!-- <input type="radio" class="btn-check type" name="type" id="remindIn" autocomplete="off" value="remindIn" checked/>
+<label class="btn btn-outline-secondary radioLabel" for="remindIn">Remind In</label>
+
+<input type="radio" class="btn-check type" name="type" id="remindAt" autocomplete="off" value="remindAt"/>
+<label class="btn btn-outline-secondary radioLabel" for="remindAt">Remind At</label> -->
+<form id="remindInForm">
+    <div class="row mt-3">
+        <p>If enabled, you will receive a feed reminder after each feed after at the specified time</p>
+        <div class="col-6 text-start">
+            <p>Enable</p>
+        </div>
+        <div class="col-6 form-check form-switch">
+            {% if reminder.enabled %}
+            <input class="form-check-input pushCheckbox float-end" type="checkbox" role="switch" id="afterFeedEnable" checked>
+            {%  else %}
+            <input class="form-check-input pushCheckbox float-end" type="checkbox" role="switch" id="afterFeedEnable">
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-6 text-start">
+            <span>Time</span>
+            <p>After start of last feed</p>
+        </div>
+        <div class="col-6">
+            <div class="row">
+                <div class="col">
+                    <span>Hours</span>
+                    <select id="hours" class="form-select" data-value="{{ reminder.hours }}">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <span>Mins</span>
+                    <select id="minutes" class="form-select" data-value="{{ reminder.minutes }}">
+                        <option value="0">0</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select>
+                </div>
+            </div>
+            <div id="hrsMinsFeedback" class="invalid-feedback">
+                Time cannot be 0
+              </div>
+        </div>
+    </div>
+    <p class="mt-3">Enable cutoff to stop notifications at night</p>
+    <div class="row mt-2">
+        <div class="col-6 text-start">
+            <p>Enable cutoff</p>
+        </div>
+        <div class="col-6 form-check form-switch">
+            {% if reminder.cutoff_enabled %}
+            <input class="form-check-input pushCheckbox float-end" type="checkbox" role="switch" id="cutoffEnable" checked>
+            {% else %}
+            <input class="form-check-input pushCheckbox float-end" type="checkbox" role="switch" id="cutoffEnable">
+            {% endif %}
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col text-start">
+            <label for="start">Start Time</label>
+            <p>Notifications start at</p>
+        </div>
+        <div class="col">
+            <input class="form-control" type="time" name="start" id="start" value="{{ reminder.start }}">
+        </div>
+    </div>
+    <div id="timeFeedback" class="invalid-feedback">
+        Start time must be before cutoff
+      </div>
+
+    <div class="row mt-3">
+        <div class="col text-start">
+            <label for="cutoff">Cutoff Time</label>
+            <p>No notifications after</p>
+        </div>
+        <div class="col">
+            <input class="form-control" type="time" name="cutoff" id="cutoff" value="{{ reminder.cutoff }}">
+        </div>
+    </div>
+    <button class="btn btn-success btn-lg form-control mt-3">Save</button>
+</form>
+<form id="remindAtForm" style="display: none">
     <div class="row mt-3">
         <div class="col">
-            <label for="fed_at">Reminder Time:</label>
+            <label for="rDateTime">Reminder Time:</label>
         </div>
         <div class="col">
             <input class="form-control" type="datetime-local" name="rDateTime" id="rDateTime" required>
+            <!-- <input class="form-control" type="time" name="rDateTime2" id="rDateTime2"> -->
         </div>
     </div>
-
-        <div class="form-floating mt-2">
-                <input type="text" name="msg" id="msg" class="form-control" placeholder="text" required>
-                <label for="msg">Reminder text:</label>
-        </div>
+    <div class="form-floating mt-2">
+        <input type="text" name="msg" id="msg" class="form-control" placeholder="text" required>
+        <label for="msg">Reminder text:</label>
+    </div>
     <button class="btn btn-success btn-lg form-control mt-3">Add Reminder</button>
 </form>
+
 <script src="/static/reminders.js"></script>
 {% endblock %}

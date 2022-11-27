@@ -64,6 +64,7 @@ class Infant(db.Model):
             "gender": self.gender,
             "public_id": self.public_id
         }
+
     def get_age(self):
         delta = relativedelta.relativedelta(date.today(), self.dob)
         years = delta.years
@@ -76,21 +77,26 @@ class Infant(db.Model):
         elif months and not years:
             age = f"{months} month{'s' if months > 1 else ''}"
         else:
-            age = f"{days} day{'s' if days > 1 else ''}"
+            age = f"{days} day{'s' if days != 1 else ''}"
         return age
+    
+    def get_months(self):
+        delta = relativedelta.relativedelta(date.today(), self.dob)
+        return delta.months + (12*delta.years)
         
     age = property(fget=get_age)
+    months = property(fget=get_months)
 
 class Feed(db.Model):
     """Feed class"""
 
     __tablename__ = 'feeds'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     method = db.Column(db.String(7), nullable=False)
     fed_at = db.Column(db.BigInteger, nullable=False)
     amount = db.Column(db.Float)
-    duration = db.Column(db.Float)
+    duration = db.Column(db.Integer)
     infant_id = db.Column(db.Integer, db.ForeignKey('infants.id'), nullable=False)
 
     def __repr__(self):
@@ -139,3 +145,29 @@ class UserInfant(db.Model):
 
     def __repr__(self):
         return f"<User {self.user_id}, Infant {self.infant_id}>"
+
+class Reminder(db.Model):
+    """Reminders class"""
+    __tablename__ = "reminders"
+
+    id = db.Column(db.Integer, primary_key=True)
+    enabled = db.Column(db.Boolean, nullable=False, default=False)
+    hours = db.Column(db.Integer, default=0)
+    minutes = db.Column(db.Integer, default=0)
+    cutoff_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    cutoff = db.Column(db.Text, nullable=False, default="20:00:00")
+    start = db.Column(db.Text, nullable=False, default="08:00:00")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user = db.relationship('User', backref="reminders")
+
+    def __repr__(self):
+        return f"<Reminder #{self.id}: {self.enabled}, {self.cutoff_enabled}, {self.cutoff}>"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "enabled": self.enabled,
+            "cutoff_enabled": self.cutoff_enabled,
+            "start": self.start,
+            "cutoff": self.cutoff
+        }

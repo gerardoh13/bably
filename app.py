@@ -10,13 +10,13 @@ from functools import wraps
 
 from pusher_push_notifications import PushNotifications
 from dotenv import load_dotenv
-from flask import Flask, flash, g, jsonify, redirect, render_template, request, session, send_from_directory, url_for, send_file
+from flask import Flask, flash, g, jsonify, redirect, render_template, request, session, send_file
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 
 from forms import LoginForm, UserAddForm
-from models import Feed, Infant, User, connect_db, db
+from models import Feed, Infant, User, Reminder, connect_db, db
 
 load_dotenv()
 
@@ -39,9 +39,8 @@ scheduler.api_enabled = True
 scheduler.init_app(app)
 scheduler.start()
 
-
 cloudinary.config(cloud_name=os.getenv('CLOUD_NAME'), api_key=os.getenv('CLOUDINARY_API_KEY'),
-                      api_secret=os.getenv('CLOUDINARY_API_SECRET'))
+                  api_secret=os.getenv('CLOUDINARY_API_SECRET'))
 
 beams_client = PushNotifications(
     instance_id=os.getenv('PUSHER_INSTANCE_ID'),
@@ -51,10 +50,11 @@ connect_db(app)
 
 # ---------------------------------------------MISC------------------------------------------------
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if g.user is None:
+        if g.user is None or g.infant is None:
             flash("Access unauthorized.", "danger")
             return redirect("/")
         return f(*args, **kwargs)
@@ -75,6 +75,7 @@ def add_user_to_g():
     else:
         g.infant = None
 
+
 def do_login(user):
     """Log in user."""
     session[CURR_USER_KEY] = user.id
@@ -93,25 +94,79 @@ def do_logout():
         del session[CURR_USER_KEY]
         flash("Goodbye!", "info")
 
+
 @app.route("/service-worker.js")
 def service_worker():
     """serve service worker file"""
     return send_file('static/service-worker.js')
 
-# @app.route("/test_pusher")
-def test_pusher(message):
-    response = beams_client.publish_to_interests(
-        interests=['hello'],
+
+def test_pusher(msg, user):
+    response = beams_client.publish_to_users(
+        user_ids=[user],
         publish_body={
             'web': {
                 'notification': {
                     'title': 'Bably says:',
-                    'body': message
+                    'body': msg
                 }
             }
         }
     )
     return response['publishId']
+
+
+@app.route('/pusher/beams-auth', methods=['GET'])
+def beams_auth():
+    user_id = request.args.get('user_id')
+    beams_token = beams_client.generate_token(user_id)
+
+    return jsonify(beams_token)
+
+
+@app.route("/upload", methods=['POST'])
+@login_required
+def upload_file():
+    upload_result = None
+    if request.method == 'POST':
+        file_to_upload = request.files['file']
+        if file_to_upload:
+            if g.infant.public_id:
+                upload_result = cloudinary.uploader.upload(
+                    file_to_upload, public_id=g.infant.public_id, filename_override=True, unique_filename=False, invalidate=True)
+            else:
+                upload_result = cloudinary.uploader.upload(file_to_upload)
+
+            return jsonify(upload_result)
+
+
+def check_notification_times(start, next, cutoff):
+    return start < next < cutoff
+
+
+def set_reminder(feed_id):
+    reminder = Reminder.query.get_or_404(g.user.reminders[0].id)
+    if reminder.enabled:
+        feed = Feed.query.get_or_404(feed_id)
+        latest_feed = Feed.query.filter(Feed.infant_id == g.infant.id).order_by(
+            desc(Feed.fed_at)).limit(1).all()
+        if feed_id != latest_feed[0].id:
+            return
+        mins = (reminder.hours * 60) + reminder.minutes
+        rd = datetime.fromtimestamp(feed.fed_at) + timedelta(minutes=mins)
+
+        next = rd.time()
+        start = time.fromisoformat(reminder.start)
+        cutoff = time.fromisoformat(reminder.cutoff)
+        if reminder.cutoff_enabled:
+            if not check_notification_times(start, next, cutoff):
+                return
+
+    msg = f"Time to feed {g.infant.first_name}"
+    user = g.user.email
+    scheduler.add_job(id=f"feed{feed_id}", func=test_pusher, trigger="date", args=[
+                      msg, user], run_date=rd)
+
 
 # ---------------------------------------------USERS/INFANTS------------------------------------------------
 
@@ -153,14 +208,21 @@ def homepage():
             datetime.today(), time.min).timestamp()
         next_midnight = datetime.combine(
             datetime.today(), time.max).timestamp()
-        feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(
-            Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).limit(3).all()
+        all_feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(
+            # Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).limit(3).all()
+            Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).all()
+        more_feeds = []
+        feeds = all_feeds
         bottle_amts = [
-            feed.amount for feed in feeds if feed.method == "bottle"]
-        nursing_feeds = [feed for feed in feeds if feed.method == "nursing"]
+            feed.amount for feed in all_feeds if feed.method == "bottle"]
+        nursing_feeds = [
+            feed for feed in all_feeds if feed.method == "nursing"]
+        if len(all_feeds) >= 3:
+            print(len(feeds))
+            feeds = all_feeds[:3]
+            more_feeds = all_feeds[3:]
 
-        return render_template('home.html', feeds=feeds, total_oz=sum(bottle_amts), nursing_count=len(nursing_feeds))
-
+        return render_template('home.html', feeds=feeds, more=more_feeds, total_oz=sum(bottle_amts), nursing_count=len(nursing_feeds))
     else:
         return redirect('/signup')
 
@@ -186,7 +248,9 @@ def signup():
             return render_template('signup.html', form=form)
 
         do_login(user)
-
+        reminder = Reminder(user_id=user.id)
+        user.reminders.append(reminder)
+        db.session.commit()
         return render_template("register.html")
 
     else:
@@ -211,10 +275,34 @@ def register_infant():
     response_json = jsonify(infant=new_infant.serialize())
     return (response_json, 201)
 
+
+@app.route('/api/infants', methods=["PATCH"])
+@login_required
+def update_infant():
+    data = request.get_json()
+    infant = Infant.query.get_or_404(g.infant.id)
+
+    infant.first_name = data.get("first_name"),
+    infant.dob = data.get("dob"),
+    infant.gender = data.get("gender"),
+    if not g.infant.public_id:
+        infant.public_id = data.get("public_id", None)
+
+    db.session.commit()
+    response_json = jsonify(infant=infant.serialize())
+    return (response_json, 200)
+
+
 @app.route('/profile')
 @login_required
 def show_profile():
     return render_template('profile.html')
+
+
+@app.route('/api/user')
+@login_required
+def get_current_userID():
+    return g.user.email
 # ---------------------------------------------FEEDS------------------------------------------------
 
 
@@ -232,6 +320,8 @@ def show_feed_form():
         )
         db.session.add(new_feed)
         db.session.commit()
+        if g.user.reminders[0].enabled:
+            set_reminder(new_feed.id)
         response_json = jsonify(feed=new_feed.serialize())
         return (response_json, 201)
     else:
@@ -262,7 +352,7 @@ def delete_feed(feed_id):
 
 @app.route('/api/feeds/<int:feed_id>', methods=["PATCH"])
 @login_required
-def update_cupcakes(feed_id):
+def update_feeds(feed_id):
     """Updates a particular feed and responds w/ JSON of that updated feed"""
     data = request.get_json()
     feed = Feed.query.get_or_404(feed_id)
@@ -274,21 +364,12 @@ def update_cupcakes(feed_id):
     response_json = jsonify(feed=feed.serialize_event())
     return (response_json, 200)
 
-    # ---------------------------------------------EVENTS------------------------------------------------
+    # ---------------------------------------------EVENTS/REMINDERS------------------------------------------------
 
 
 @app.route('/calendar')
 @login_required
 def show_calendar():
-    # test_pusher()
-    # date_and_time = datetime.now()
-    # time_change = timedelta(minutes=1)
-    # new_time = date_and_time + time_change 
-
-    # scheduler.add_job(id="1", func=test_pusher, trigger='date', run_date=new_time)
-    print('***********************************')
-    print(__name__)
-
     return render_template('calendar.html')
 
 
@@ -304,24 +385,35 @@ def fetch_feeds():
         all_day_events = []
         unique_dates = {event["start"][0:10] for event in response_json}
         for x in unique_dates:
-            all_day_events.append({"start": x, "title": "feed"})
+            all_day_events.append({"start": x, "title": ""})
         response_json.extend(all_day_events)
 
     return (response_json, 201)
 
 
-@app.route("/upload", methods=['POST'])
-# @cross_origin()
-@login_required
-def upload_file():
-    app.logger.info('in upload route')
-    upload_result = None
-    if request.method == 'POST':
-        file_to_upload = request.files['file']
-        if file_to_upload:
-            upload_result = cloudinary.uploader.upload(file_to_upload)
-            return jsonify(upload_result)
-
 @app.route("/reminders")
+@login_required
 def show_reminders():
-    return render_template("reminders.html")
+    reminder = Reminder.query.get_or_404(g.user.reminders[0].id)
+    return render_template("reminders.html", reminder=reminder)
+
+
+@app.route("/api/reminders", methods=["POST"])
+@login_required
+def schedule_reminder():
+    data = request.get_json()
+    reminder = Reminder.query.get_or_404(g.user.reminders[0].id)
+    reminder.hours = data.get("hours")
+    reminder.minutes = data.get("minutes")
+    reminder.enabled = data.get("afterFeedEnable")
+    reminder.start = data.get('start')
+    reminder.cutoff = data.get('cutoff')
+    reminder.cutoff_enabled = data.get("cutOffEnabled")
+    db.session.commit()
+
+    response_json = jsonify(reminder=reminder.serialize())
+    return (response_json, 200)
+
+@app.route('/landing')
+def show_landing():
+    return render_template('home-anon.html')
