@@ -75,6 +75,7 @@ async function submitChildReg() {
         newInfant.public_id = public_id
     }
     const newChildRes = await axios.post("/api/infants", {...newInfant});
+    console.log(newChildRes)
     if (newChildRes.status === 201) {
         location.href = "/"
     }

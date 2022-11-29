@@ -101,7 +101,7 @@ def service_worker():
     return send_file('static/service-worker.js')
 
 
-def test_pusher(msg, user):
+def push_notification(msg, user):
     response = beams_client.publish_to_users(
         user_ids=[user],
         publish_body={
@@ -164,7 +164,7 @@ def set_reminder(feed_id):
 
     msg = f"Time to feed {g.infant.first_name}"
     user = g.user.email
-    scheduler.add_job(id=f"feed{feed_id}", func=test_pusher, trigger="date", args=[
+    scheduler.add_job(id=f"feed{feed_id}", func=push_notification, trigger="date", args=[
                       msg, user], run_date=rd)
 
 
@@ -201,6 +201,8 @@ def logout():
 
 @app.route('/')
 def homepage():
+    """returns dashboard with relevant info if logged in and an infant has been registered, 
+    redirects to child registration if user is logged in and child is not registered, or redirects to signup if user is not logged in"""
     if g.user:
         if not g.infant:
             return render_template("register.html")
@@ -218,7 +220,6 @@ def homepage():
         nursing_feeds = [
             feed for feed in all_feeds if feed.method == "nursing"]
         if len(all_feeds) >= 3:
-            print(len(feeds))
             feeds = all_feeds[:3]
             more_feeds = all_feeds[3:]
 
@@ -229,6 +230,7 @@ def homepage():
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
+    """returns signup page for get request, handles new account creating for post requests"""
     if g.user and g.infant:
         return redirect("/")
 
@@ -258,7 +260,7 @@ def signup():
 
 
 @app.route('/api/infants', methods=["POST"])
-@login_required
+# @login_required
 def register_infant():
     data = request.get_json()
     new_infant = Infant(
@@ -280,16 +282,16 @@ def register_infant():
 @login_required
 def update_infant():
     data = request.get_json()
-    infant = Infant.query.get_or_404(g.infant.id)
+    modified_infant = Infant.query.get_or_404(g.infant.id)
 
-    infant.first_name = data.get("first_name"),
-    infant.dob = data.get("dob"),
-    infant.gender = data.get("gender"),
+    modified_infant.first_name = data.get("first_name"),
+    modified_infant.dob = data.get("dob"),
+    modified_infant.gender = data.get("gender"),
     if not g.infant.public_id:
-        infant.public_id = data.get("public_id", None)
+        modified_infant.public_id = data.get("public_id", None)
 
     db.session.commit()
-    response_json = jsonify(infant=infant.serialize())
+    response_json = jsonify(infant=modified_infant.serialize())
     return (response_json, 200)
 
 
@@ -326,10 +328,6 @@ def show_feed_form():
         return (response_json, 201)
     else:
         return render_template("feeds.html")
-
-# @app.route('/register')
-# def show_registration():
-#     return render_template('register.html')
 
 
 @app.route('/api/feeds/<int:feed_id>')
@@ -413,7 +411,3 @@ def schedule_reminder():
 
     response_json = jsonify(reminder=reminder.serialize())
     return (response_json, 200)
-
-@app.route('/landing')
-def show_landing():
-    return render_template('home-anon.html')
