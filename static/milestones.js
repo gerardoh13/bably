@@ -187,12 +187,11 @@ document.getElementById("profileForm").addEventListener('submit', async (e) => {
     let gender = document.querySelector('input[name="gender"]:checked').value;
     let dob = document.getElementById("dob").value
     let public_id = document.getElementById('public_id').value
-    let updatedIndant = { first_name, gender, dob }
+    let updatedInfant = { first_name, gender, dob }
     if (public_id) {
-        updatedIndant.public_id = public_id
+        updatedInfant.public_id = public_id
     }
-    console.log(updatedIndant)
-    const newChildRes = await axios.patch("/api/infants", { ...updatedIndant });
+    const newChildRes = await axios.patch("/api/infants", { ...updatedInfant });
     if (newChildRes.status === 200) {
         location.reload()
     }

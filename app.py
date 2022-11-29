@@ -128,8 +128,10 @@ def beams_auth():
 
 
 @app.route("/upload", methods=['POST'])
-@login_required
 def upload_file():
+    if g.user is None:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
     upload_result = None
     if request.method == 'POST':
         file_to_upload = request.files['file']
@@ -263,8 +265,10 @@ def signup():
 
 
 @app.route('/api/infants', methods=["POST"])
-# @login_required
 def register_infant():
+    if g.user is None:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
     data = request.get_json()
     new_infant = Infant(
         first_name=data.get("first_name"),
