@@ -37,7 +37,7 @@
   <tbody>
     {% for feed in feeds %}
     <tr>
-      <td>{{ feed.date }}</td>
+      <td class="timestamp" data-date="{{feed.fed_at}}"></td>
       <td>{{ feed.method }}</td>
       {% if feed.method == 'bottle' %}
       <td>{{ feed.amount }} oz</td>
@@ -54,7 +54,7 @@
     </tr>
     {% for feed in more %}
     <tr class ="hidden" style="display: none">
-      <td>{{ feed.date }}</td>
+      <td class="timestamp" data-date="{{feed.fed_at}}"></td>
       <td>{{ feed.method }}</td>
       {% if feed.method == 'bottle' %}
       <td>{{ feed.amount }} oz</td>
@@ -110,29 +110,6 @@
 </div>
 <script src="https://js.pusher.com/beams/1.0/push-notifications-cdn.js"></script>
 <script src="/static/push-notifications.js"></script>
-<script>
-let showMore = document.getElementById("showMore")
-if (showMore){
-  showMore.addEventListener('click', () => {
-$('#showMore').hide()
-let hiddenRows = document.getElementsByClassName("hidden")
-for (let row of [...hiddenRows]){
-  row.style.display = ""
-}
-$('#moreDiv').show()
-})
-} 
-let hideMore = document.getElementById("hideMore")
-if (hideMore) {
-  hideMore.addEventListener('click', () => {
-  $('#showMore').show()
-let hiddenRows = document.getElementsByClassName("hidden")
-for (let row of [...hiddenRows]){
-  row.style.display = "none"
-}
-$('#moreDiv').show()
-})
-}
+<script src="/static/home.js"></script>
 
-</script>
 {% endblock %}
