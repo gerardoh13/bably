@@ -124,8 +124,8 @@ class Feed(db.Model):
         return {
             "title": title,
             "id": self.id,
-            "start": datetime.fromtimestamp(self.fed_at).isoformat(),
-            "ts": self.fed_at
+            "date": datetime.fromtimestamp(self.fed_at).isoformat(),
+            "start": self.fed_at * 1000
         }
     
     def to_date(self):
