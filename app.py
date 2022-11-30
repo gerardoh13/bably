@@ -393,7 +393,8 @@ def fetch_feeds():
     response_json = [feed.serialize_event() for feed in feeds]
     if response_json:
         all_day_events = []
-        unique_dates = {event["date"][0:10] for event in response_json}
+        unique_dates = {datetime.fromtimestamp(event["start"] / 1000).isoformat()[0:10] for event in response_json}
+
         for x in unique_dates:
             all_day_events.append({"start": x, "title": ""})
         response_json.extend(all_day_events)
