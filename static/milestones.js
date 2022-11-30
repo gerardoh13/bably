@@ -81,7 +81,7 @@ function getMilestones(months, gender) {
     <ul>
         <li>Holds head steady without support when you are holding ${pronoun}</li>
         <li>Holds a toy when you put it in ${possPronoun} hand</li>
-        <li>Uses ${pronoun} arm to swing at toys</li>
+        <li>Uses ${possPronoun} arm to swing at toys</li>
         <li>Brings hands to mouth</li>
         <li>Pushes up onto elbows/forearms when on tummy</li>
     </ul>
@@ -105,7 +105,7 @@ function getMilestones(months, gender) {
     <ul>
         <li>Puts things in ${possPronoun} mouth to explore them</li>
         <li>Reaches to grab a toy ${subject} wants</li>
-        <li>Closes lips to show ${subject} doesn’t want more food</li>
+        <li>Closes lips to show ${subject} doesn't want more food</li>
     </ul>
     <h4>Movement/Physical</h4>
     <ul>

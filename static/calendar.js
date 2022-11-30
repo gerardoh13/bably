@@ -49,17 +49,8 @@ let calendar = new FullCalendar.Calendar(calendarEl, {
     url: '/api/events',
     display: 'list-item',
     backgroundColor: '#66bdb8'
-
   },
   
-});
-
-calendar.on('datesSet', function(dateInfo ) {
-  if (dateInfo .view.type == "dayGridMonth"){
-    calendar.eventDisplay = "none"
-    this.render();
-
-  }
 });
 
 async function prepFeedModal(id) {
@@ -94,6 +85,7 @@ $("#delEvt").on("click", async () => {
   const delRes = await axios.delete(`/api/feeds/${id}`);
   if (delRes.data.message === "deleted") {
     lastClicked.remove()
+    calendar.refetchEvents()
     $("#eventModal").modal('hide')
   }
 })

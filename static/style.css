@@ -98,6 +98,11 @@ input {
   .fc-daygrid-event-harness {
     margin-top: 0px !important;
   }
+
+  .fc-daygrid-dot-event {
+    height: 0px;
+  }
+
   #babyPic {
     margin-top: 10%;
     width: 50%;

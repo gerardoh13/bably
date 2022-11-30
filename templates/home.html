@@ -2,80 +2,48 @@
 
 <!-- ************************************ -->
 <h2>Today's Feeds</h2>
-{% if feeds %}
-<div class="row mb-3">
-  <div class="col">
-    <div class="card text-bg-primary">
-      <div class="card-body">
-        <h2 class="card-title">{{ total_oz }} oz</h2>
+<div id="feeds" style="display: none;">
+  <div class="row mb-3">
+    <div class="col">
+      <div class="card text-bg-primary">
+        <div class="card-body">
+          <h2 id="bottleCount" class="card-title"></h2>
+        </div>
+        <div class="card-footer">
+          <p>Total oz</p>
+        </div>
       </div>
-      <div class="card-footer">
-        <p>Total oz</p>
+    </div>
+    <div class="col">
+      <div class="card text-bg-primary">
+        <div class="card-body">
+          <h2 id="nursingCount" class="card-title"></h2>
+        </div>
+        <div class="card-footer">
+          <p>Nursing Feeds</p>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col">
-    <div class="card text-bg-primary">
-      <div class="card-body">
-        <h2 class="card-title">{{ nursing_count }}</h2>
-      </div>
-      <div class="card-footer">
-        <p>Nursing Feeds</p>
-      </div>
-    </div>
-  </div>
+  
+  <table class="table table-striped text-start">
+    <thead>
+      <tr>
+        <th scope="col">Date/Time</th>
+        <th scope="col">Method</th>
+        <th scope="col">oz/mins</th>
+      </tr>
+    </thead>
+    <tbody id="table"></tbody>
+  </table>
 </div>
 
-<table class="table table-striped text-start">
-  <thead>
-    <tr>
-      <th scope="col">Date/Time</th>
-      <th scope="col">Method</th>
-      <th scope="col">oz/mins</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for feed in feeds %}
-    <tr>
-      <td class="timestamp" data-date="{{feed.fed_at}}"></td>
-      <td>{{ feed.method }}</td>
-      {% if feed.method == 'bottle' %}
-      <td>{{ feed.amount }} oz</td>
-      {% else %}
-      <td>{{ feed.duration }} mins</td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-    {% if more %}
-    <tr id="showMore">
-      <th scope="row">+ {{more|length}} more</th>
-      <td></td>
-      <td></td>
-    </tr>
-    {% for feed in more %}
-    <tr class ="hidden" style="display: none">
-      <td class="timestamp" data-date="{{feed.fed_at}}"></td>
-      <td>{{ feed.method }}</td>
-      {% if feed.method == 'bottle' %}
-      <td>{{ feed.amount }} oz</td>
-      {% else %}
-      <td>{{ feed.duration }} mins</td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-    <tr id="hideMore" class="hidden" style="display: none">
-      <th scope="row">Hide</th>
-      <td></td>
-      <td></td>
-    </tr>
-    {% endif %}
-  </tbody>
-</table>
-{% else %}
-<hr>
-<h4 class="my-3">Log {{ g.infant.first_name }}'s feeds to see your latest activity here!</h4>
-<hr>
-{% endif %}
+<div id="noFeeds" style="display: none;">
+  <hr>
+  <h4 class="my-3">Log {{ g.infant.first_name }}'s feeds to see your latest activity here!</h4>
+  <hr>
+</div>
+
 <!-- **************************************** -->
 <div class="card text-bg-primary mb-3">
   <a class="cardLink" href="/feeds">

@@ -206,29 +206,12 @@ def logout():
 
 @app.route('/')
 def homepage():
-    """returns dashboard with relevant info if logged in and an infant has been registered, 
+    """returns dashboard if logged in and an infant has been registered, 
     redirects to child registration if user is logged in and child is not registered, or redirects to signup if user is not logged in"""
     if g.user:
         if not g.infant:
             return render_template("register.html")
-        last_midnight = datetime.combine(
-            datetime.today(), time.min).timestamp()
-        next_midnight = datetime.combine(
-            datetime.today(), time.max).timestamp()
-        all_feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(
-            # Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).limit(3).all()
-            Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).all()
-        more_feeds = []
-        feeds = all_feeds
-        bottle_amts = [
-            feed.amount for feed in all_feeds if feed.method == "bottle"]
-        nursing_feeds = [
-            feed for feed in all_feeds if feed.method == "nursing"]
-        if len(all_feeds) >= 3:
-            feeds = all_feeds[:3]
-            more_feeds = all_feeds[3:]
-
-        return render_template('home.html', feeds=feeds, more=more_feeds, total_oz=sum(bottle_amts), nursing_count=len(nursing_feeds))
+        return render_template('home.html')
     else:
         return redirect('/signup')
 
@@ -336,6 +319,28 @@ def show_feed_form():
     else:
         return render_template("feeds.html")
 
+@app.route('/api/feeds/<int:last_midnight>/<int:next_midnight>')
+@login_required
+def get_feeds(last_midnight, next_midnight):
+        all_feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(
+            Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).all()
+        bottle_amts = [
+            feed.amount for feed in all_feeds if feed.method == "bottle"]
+        nursing_feeds = [
+            feed for feed in all_feeds if feed.method == "nursing"]
+        all_feeds = [feed.serialize() for feed in all_feeds]
+        more_feeds = []
+        feeds = all_feeds
+        if len(all_feeds) >= 3:
+            feeds = all_feeds[:3]
+            more_feeds = all_feeds[3:]
+        response_json = {
+            "feeds": feeds,
+            "total_oz": sum(bottle_amts),
+            "nursing_count": len(nursing_feeds),
+            "more_feeds": more_feeds
+        }
+        return  (response_json, 200)
 
 @app.route('/api/feeds/<int:feed_id>')
 @login_required
