@@ -48,7 +48,8 @@ let calendar = new FullCalendar.Calendar(calendarEl, {
   events: {
     url: '/api/events',
     display: 'list-item',
-    backgroundColor: '#66bdb8'
+    backgroundColor: '#66bdb8',
+    extraParams: {tz: Intl.DateTimeFormat().resolvedOptions().timeZone}
   },
   
 });

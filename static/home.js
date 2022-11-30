@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     midnight.setDate(midnight.getDate() + 1)
     let next_midnight = midnight.getTime() / 1000
     const feedsRes = await axios.get(`/api/feeds/${last_midnight}/${next_midnight}`)
-    if (feedsRes.data.feeds){
+    if (feedsRes.data.feeds.length > 0){
         $("#feeds").show()
         document.getElementById("bottleCount").innerText = `${feedsRes.data.total_oz} oz`
         document.getElementById("nursingCount").innerText = feedsRes.data.nursing_count

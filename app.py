@@ -6,12 +6,11 @@ import os
 from flask_apscheduler import APScheduler
 from datetime import datetime, time, timedelta
 from functools import wraps
-
+from zoneinfo import ZoneInfo
 
 from pusher_push_notifications import PushNotifications
 from dotenv import load_dotenv
 from flask import Flask, flash, g, jsonify, redirect, render_template, request, session, send_file
-from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy import desc
 from sqlalchemy.exc import IntegrityError
 
@@ -35,7 +34,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "CATS_ARE_COOL")
-# toolbar = DebugToolbarExtension(app)
 
 scheduler = APScheduler()
 scheduler.api_enabled = True
@@ -382,6 +380,10 @@ def update_feeds(feed_id):
 def show_calendar():
     return render_template('calendar.html')
 
+def format_dates(date):
+    delta = datetime.utcfromtimestamp(date / 1000).replace(tzinfo=ZoneInfo(request.args.get("tz")))
+    date = datetime.utcfromtimestamp(date / 1000) + delta.utcoffset()
+    return date.isoformat()[0:10]
 
 @app.route("/api/events")
 @login_required
@@ -393,7 +395,7 @@ def fetch_feeds():
     response_json = [feed.serialize_event() for feed in feeds]
     if response_json:
         all_day_events = []
-        unique_dates = {datetime.fromtimestamp(event["start"] / 1000).isoformat()[0:10] for event in response_json}
+        unique_dates = {format_dates(event["start"]) for event in response_json}
 
         for x in unique_dates:
             all_day_events.append({"start": x, "title": ""})
