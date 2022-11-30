@@ -23,7 +23,7 @@
             {% if g.infant %}
             <a class="navbar-brand" href="/profile">
                 {% if g.infant.public_id %}
-                <img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" height="30" class="d-inline-block align-text-top navImg">
+                <img id="navBarPic" src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic" height="30" class="d-inline-block align-text-top navImg">
                 {% endif %}
                 {{ g.infant.first_name }}
             </a>
@@ -74,6 +74,7 @@
         {% block content %} {% endblock %}
     </div>
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script src="/static/photo-cache-control.js"></script>
 </body>
 
 </html>

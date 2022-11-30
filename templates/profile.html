@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if g.infant.public_id %}
-<img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic"
+<img id="profilePic" src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic"
     class="profileImg rounded-5">
 {% else %}
 <img src="https://as1.ftcdn.net/v2/jpg/01/28/56/34/1000_F_128563455_bGrVZnfDCL0PxH1sU33NpOhGcCc1M7qo.jpg" alt="baby pic"
     class="profileImg rounded-5">
 {% endif %}
 <br>
-<h2 id="age" class="mt-2" data-gender="{{ g.infant.gender }}" data-months="{{ g.infant.months }}">{{ g.infant.first_name }} is {{ g.infant.age }} old!</h2>
+<h2 id="age" class="mt-2" data-gender="{{ g.infant.gender }}" data-months="{{ g.infant.months }}">{{ g.infant.first_name
+    }} is {{ g.infant.age }} old!</h2>
 <button class="btn btn-info mt-2" data-bs-toggle="modal" data-bs-target="#profileModal">Edit Profile</button>
 <div id="milestones" class="text-start mt-2"></div>
 <!-- -------------Modal--------------- -->
@@ -23,21 +24,22 @@
             <div class="modal-body">
                 <div id="uploadForm">
                     {% if g.infant.public_id %}
-                    <img src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}" alt="baby pic"
-                        class="editImg rounded-5">
-                        <br>
-                        {% else %}
-                        <small class="mb-2">(Optional) Would you like to add a photo of {{ g.infant.first_name }}?</small>
+                    <img id="modalPic" src="https://res.cloudinary.com/dolnu62zm/image/upload/{{ g.infant.public_id }}"
+                        alt="baby pic" class="editImg rounded-5">
+                    <br>
+                    {% else %}
+                    <small class="mb-2">(Optional) Would you like to add a photo of {{ g.infant.first_name }}?</small>
                     {% endif %}
                     <form id="fileForm">
-                        <input class="form-control mt-2" type="file" id="formFile">
+                        <input class="form-control mt-2" type="file" id="formFile" required>
                         <button id="uploadBtn" class="btn btn-primary form-control mt-2 mb-3">Upload</button>
                     </form>
                 </div>
                 <div id="uploadSuccess" style="display: none">
-                    <img id="babyPhoto" src="" alt="your baby's photo" class="editImg rounded-5 mb-3">
+                    <img id="babyPhoto" src="" alt="your baby's photo" class="editImg rounded-5">
                     <input type="hidden" name="public_id" id="public_id">
                     {% if g.infant.public_id %}
+                    <br>
                     <small>Looking good!</small>
                     {% else %}
                     <br>
