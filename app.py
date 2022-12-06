@@ -144,15 +144,15 @@ def set_reminder(feed_id, tz):
             return
         mins = (reminder.hours * 60) + reminder.minutes
         rd = datetime.utcfromtimestamp(feed.fed_at) + timedelta(minutes=mins)
+        delta = datetime.utcfromtimestamp(feed.fed_at).replace(tzinfo=ZoneInfo(tz))
 
-        delta = rd.time().replace(tzinfo=ZoneInfo(tz))
-        next = rd.time() + delta.utcoffset()
+        next = (rd + delta.utcoffset()).time()
         start = time.fromisoformat(reminder.start)
         cutoff = time.fromisoformat(reminder.cutoff)
         if reminder.cutoff_enabled:
             if not check_notification_times(start, next, cutoff):
                 return
-
+                
     msg = f"Time to feed {g.infant.first_name}"
     user = g.user.email
     scheduler.add_job(id=f"feed{feed_id}", func=push_notification, trigger="date", args=[
