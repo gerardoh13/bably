@@ -83,7 +83,7 @@ def service_worker():
     return send_file('static/service-worker.js')
 
 
-def push_notification(msg, user, start, cutoff):
+def push_notification(msg, user, start, cutoff, rd):
     """sends push notification to the current user"""
     response = beams_client.publish_to_users(
         user_ids=[user],
@@ -155,7 +155,7 @@ def set_reminder(feed_id):
     msg = f"Time to feed {g.infant.first_name}"
     user = g.user.email
     scheduler.add_job(id=f"feed{feed_id}", func=push_notification, trigger="date", args=[
-                      msg, user, start.isoformat(), cutoff.isoformat()], run_date=rd)
+                      msg, user, start.isoformat(), cutoff.isoformat(), rd.isoformat()], run_date=rd)
 
 # ---------------------------------------------USERS/INFANTS------------------------------------------------
 def do_login(user):
