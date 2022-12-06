@@ -12,11 +12,13 @@
           </div>
     </div>
     <hr class="my-4" />
+    <small>Select your child's gender</small>
+    <br>
     <input type="radio" class="btn-check gender" name="gender" id="boy" autocomplete="off" value="male" required/>
-    <label class="btn btn-outline-secondary" for="boy"><i class="bi bi-gender-male"></i> Boy</label>
+    <label class="btn btn-outline-dark" for="boy"><i class="bi bi-gender-male"></i> Boy</label>
 
     <input type="radio" class="btn-check gender" name="gender" id="girl" autocomplete="off" value="female" />
-    <label class="btn btn-outline-secondary" for="girl"><i class="bi bi-gender-female"></i> Girl</label>
+    <label class="btn btn-outline-dark" for="girl"><i class="bi bi-gender-female"></i> Girl</label>
     <div class="invalid-feedback">
         Please select your child's gender.
       </div>
@@ -47,6 +49,13 @@
 
 </div>
 
+<div class="tab">
+    <h2>Almost done!</h2>
+    <h3>Bably uses push notifications to send you feeding reminders</h3>
+    <p>When prompted, please allow notifications.</p>
+    <p>You can always disable notifications, or turn them off during the night from the reminder settings page.</p>
+</div>
+
 <div class="row">
     <div class="col">
         <button class="btn btn-success mt-3 form-control" id="prevBtn" onclick="nextPrev(-1)">
@@ -64,6 +73,8 @@
     <span class="step"></span>
     <span class="step"></span>
     <span class="step"></span>
+    <span class="step"></span>
+
 </div>
 <script src="/static/register.js"></script>
 {% endblock %}

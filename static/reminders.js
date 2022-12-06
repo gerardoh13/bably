@@ -1,24 +1,7 @@
 const afterFeedEnableBox = document.getElementById("afterFeedEnable")
 const cutoffEnableBox = document.getElementById("cutoffEnable")
 
-// document.getElementById("remindAtForm").addEventListener("submit", async (e) => {
-//     e.preventDefault()
-//     let dt = document.getElementById('rDateTime').value
-//     let msg = document.getElementById('msg').value
-//     let currUser = await axios.get("/api/user")
-//     let newReminder = {
-//         id: "test1",
-//         func: "app:test_pusher",
-//         trigger: "date",
-//         run_date: dt,
-//         args: [msg, currUser.data]
-
-//     }
-//     console.log(newReminder)
-//     let remRes = await axios.post("/scheduler/jobs", {...newReminder})
-//     console.log(remRes)
-// })
-
+// future versions will allow the user to set custom reminders. commented code will toggle between the two options
 // radios = document.getElementsByClassName("type")
 // for (let i = 0; i < radios.length; i++){
 //     radios[i].addEventListener('change', () => {
@@ -75,9 +58,7 @@ document.getElementById("remindInForm").addEventListener("submit", async (e) => 
     }
     let cutOffEnabled = cutoffEnableBox.checked
     let newReminder = { afterFeedEnable, cutoff, start, cutOffEnabled, hours, minutes }
-    console.log(newReminder)
     const reminderRes = await axios.post("/api/reminders", {...newReminder})
-    console.log(reminderRes.data)
     if (reminderRes.status === 200) {
         location.href = "/"
     }

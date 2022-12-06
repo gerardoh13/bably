@@ -53,6 +53,7 @@ connect_db(app)
 
 
 def login_required(f):
+    """checks if a user is logged in, if not redirects to homepage and flashes unauthorized message"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if g.user is None or g.infant is None:
@@ -76,33 +77,14 @@ def add_user_to_g():
     else:
         g.infant = None
 
-
-def do_login(user):
-    """Log in user."""
-    session[CURR_USER_KEY] = user.id
-
-
-def add_infant(infant):
-    """Log in user."""
-    session[CURR_INFANT_KEY] = infant.id
-
-
-def do_logout():
-    """Logout user."""
-    if CURR_INFANT_KEY in session:
-        del session[CURR_INFANT_KEY]
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
-        flash("Goodbye!", "info")
-
-
 @app.route("/service-worker.js")
 def service_worker():
     """serve service worker file"""
     return send_file('static/service-worker.js')
 
 
-def push_notification(msg, user):
+def push_notification(msg, user, start, cutoff):
+    """sends push notification to the current user"""
     response = beams_client.publish_to_users(
         user_ids=[user],
         publish_body={
@@ -119,6 +101,7 @@ def push_notification(msg, user):
 
 @app.route('/pusher/beams-auth', methods=['GET'])
 def beams_auth():
+    """generates a beams token for push notification for the user currently logged in"""
     user_id = request.args.get('user_id')
     beams_token = beams_client.generate_token(user_id)
 
@@ -127,6 +110,7 @@ def beams_auth():
 
 @app.route("/upload", methods=['POST'])
 def upload_file():
+    """uploads a photo for the infant profile page. if a photo already exists it replaces the current photo"""
     if g.user is None:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -134,7 +118,7 @@ def upload_file():
     if request.method == 'POST':
         file_to_upload = request.files['file']
         if file_to_upload:
-            if g.infant.public_id:
+            if g.infant and g.infant.public_id:
                 upload_result = cloudinary.uploader.upload(
                     file_to_upload, public_id=g.infant.public_id, filename_override=True, unique_filename=False, invalidate=True)
             else:
@@ -144,10 +128,13 @@ def upload_file():
 
 
 def check_notification_times(start, next, cutoff):
+    """checks if the next notification falls within the do not disturb night period"""
     return start < next < cutoff
 
 
 def set_reminder(feed_id):
+    """if reminders are enabled, and reminders fall outside of the do not disturb period, creates a job to send a notification
+    at the next requested time"""
     reminder = Reminder.query.get_or_404(g.user.reminders[0].id)
     if reminder.enabled:
         feed = Feed.query.get_or_404(feed_id)
@@ -168,11 +155,26 @@ def set_reminder(feed_id):
     msg = f"Time to feed {g.infant.first_name}"
     user = g.user.email
     scheduler.add_job(id=f"feed{feed_id}", func=push_notification, trigger="date", args=[
-                      msg, user], run_date=rd)
-
+                      msg, user, start, cutoff], run_date=rd)
 
 # ---------------------------------------------USERS/INFANTS------------------------------------------------
+def do_login(user):
+    """Log in user."""
+    session[CURR_USER_KEY] = user.id
 
+
+def add_infant(infant):
+    """Log in user."""
+    session[CURR_INFANT_KEY] = infant.id
+
+
+def do_logout():
+    """Logout user."""
+    if CURR_INFANT_KEY in session:
+        del session[CURR_INFANT_KEY]
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+        flash("Goodbye!", "info")
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -247,6 +249,7 @@ def signup():
 
 @app.route('/api/infants', methods=["POST"])
 def register_infant():
+    """registers a new infant"""
     if g.user is None:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -269,6 +272,7 @@ def register_infant():
 @app.route('/api/infants', methods=["PATCH"])
 @login_required
 def update_infant():
+    """updates the infant information"""
     data = request.get_json()
     modified_infant = Infant.query.get_or_404(g.infant.id)
 
@@ -286,19 +290,24 @@ def update_infant():
 @app.route('/profile')
 @login_required
 def show_profile():
+    """shows the profile page"""
     return render_template('profile.html')
 
 
 @app.route('/api/user')
-@login_required
 def get_current_userID():
-    return g.user.email
+    """if a user is logged in, returns the email adress used for push notifications"""
+    if g.user:
+        return g.user.email
+    else:
+        return "N/A"
 # ---------------------------------------------FEEDS------------------------------------------------
 
 
 @app.route('/feeds', methods=["GET", "POST"])
 @login_required
 def show_feed_form():
+    """if method is GET it shows the form to add a new feed, if the method is POST it creates a new feed and adds to db"""
     if request.method == "POST":
         data = request.get_json()
         new_feed = Feed(
@@ -320,29 +329,31 @@ def show_feed_form():
 @app.route('/api/feeds/<int:last_midnight>/<int:next_midnight>')
 @login_required
 def get_feeds(last_midnight, next_midnight):
-        all_feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(
+    """returns a list of feeding events for the current day to be displayed on the homepage"""
+    all_feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(Feed.fed_at >= last_midnight).filter(
             Feed.fed_at <= next_midnight).order_by(desc(Feed.fed_at)).all()
-        bottle_amts = [
+    bottle_amts = [
             feed.amount for feed in all_feeds if feed.method == "bottle"]
-        nursing_feeds = [
+    nursing_feeds = [
             feed for feed in all_feeds if feed.method == "nursing"]
-        all_feeds = [feed.serialize() for feed in all_feeds]
-        more_feeds = []
-        feeds = all_feeds
-        if len(all_feeds) >= 3:
-            feeds = all_feeds[:3]
-            more_feeds = all_feeds[3:]
-        response_json = {
-            "feeds": feeds,
-            "total_oz": sum(bottle_amts),
-            "nursing_count": len(nursing_feeds),
-            "more_feeds": more_feeds
+    all_feeds = [feed.serialize() for feed in all_feeds]
+    more_feeds = []
+    feeds = all_feeds
+    if len(all_feeds) >= 3:
+        feeds = all_feeds[:3]
+        more_feeds = all_feeds[3:]
+    response_json = {
+        "feeds": feeds,
+        "total_oz": sum(bottle_amts),
+        "nursing_count": len(nursing_feeds),
+        "more_feeds": more_feeds
         }
-        return  (response_json, 200)
+    return  (response_json, 200)
 
 @app.route('/api/feeds/<int:feed_id>')
 @login_required
 def show_feed(feed_id):
+    """returns a json onject with feed information"""
     fetched_feed = Feed.query.get_or_404(feed_id)
     response_json = jsonify(feed=fetched_feed.serialize())
     return (response_json, 201)
@@ -378,9 +389,11 @@ def update_feeds(feed_id):
 @app.route('/calendar')
 @login_required
 def show_calendar():
+    """shows the calendar page"""
     return render_template('calendar.html')
 
 def format_dates(date):
+    """formats the feed events to the local timezone"""
     delta = datetime.utcfromtimestamp(date / 1000).replace(tzinfo=ZoneInfo(request.args.get("tz")))
     date = datetime.utcfromtimestamp(date / 1000) + delta.utcoffset()
     return date.isoformat()[0:10]
@@ -388,6 +401,7 @@ def format_dates(date):
 @app.route("/api/events")
 @login_required
 def fetch_feeds():
+    """returns a list of feeding events to be displayed on the calendar"""
     start = datetime.fromisoformat(request.args.get("start")).timestamp()
     end = datetime.fromisoformat(request.args.get("end")).timestamp()
     feeds = Feed.query.filter(Feed.infant_id == g.infant.id).filter(
@@ -414,6 +428,7 @@ def show_reminders():
 @app.route("/api/reminders", methods=["POST"])
 @login_required
 def schedule_reminder():
+    """updates the reminder object to the user preferred settings"""
     data = request.get_json()
     reminder = Reminder.query.get_or_404(g.user.reminders[0].id)
     reminder.hours = data.get("hours")

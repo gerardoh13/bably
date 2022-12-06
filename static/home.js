@@ -1,14 +1,5 @@
 let table = document.getElementById('table')
 
-// let timestamps = document.getElementsByClassName('timestamp')
-// for (let ts of timestamps){
-//     let value = parseInt(ts.dataset.date) * 1000
-//     let toDate = new Date(value)
-//     let date = toDate.toLocaleDateString()
-//     let time = toDate.toLocaleString([], {hour: '2-digit', minute:'2-digit'})
-//     ts.innerHTML = `${date} ${time}`
-// }
-
 function toDateStr (timestamp) {
     let value = timestamp * 1000
     let toDate = new Date(value)
@@ -61,6 +52,7 @@ function createMoreRows(feeds){
     
 }
 document.addEventListener('DOMContentLoaded', async () => {
+    startBeams()
     let midnight = new Date()
     midnight.setHours(0,0,0,0)
     let last_midnight = midnight.getTime() / 1000
@@ -102,4 +94,26 @@ for (let row of [...hiddenRows]){
   row.style.display = "none"
 }
 $('#moreDiv').show()
+}
+
+async function startBeams() {
+    let currUserRes = await axios.get("/api/user")
+    let currUser = currUserRes.data
+    if (currUser === "N/A") {
+        return
+    }
+    if (sessionStorage.getItem("currUser") !== currUser) {
+        const beamsClient = new PusherPushNotifications.Client({
+            instanceId: "bee9563f-0b10-4988-9277-493e97d98be5",
+        });
+        const beamsTokenProvider = new PusherPushNotifications.TokenProvider({
+            url: "/pusher/beams-auth",
+        });
+        beamsClient
+            .start()
+            .then(() => beamsClient.setUserId(currUser, beamsTokenProvider))
+            .then(() => console.log('success'))
+            .catch(console.error)
+        sessionStorage.setItem("currUser", currUser)
+    }
 }
