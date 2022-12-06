@@ -145,7 +145,8 @@ def set_reminder(feed_id, tz):
         mins = (reminder.hours * 60) + reminder.minutes
         rd = datetime.utcfromtimestamp(feed.fed_at) + timedelta(minutes=mins)
 
-        next = rd.time().replace(tzinfo=ZoneInfo(tz))
+        delta = rd.time().replace(tzinfo=ZoneInfo(tz))
+        next = rd.time() + delta.utcoffset()
         start = time.fromisoformat(reminder.start)
         cutoff = time.fromisoformat(reminder.cutoff)
         if reminder.cutoff_enabled:
