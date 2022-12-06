@@ -29,9 +29,7 @@ document.getElementById("logout").addEventListener("click", () => {
         .catch(console.error);
 });
 
-document.addEventListener('DOMContentLoaded', async () => {
-    if (location.protocol !== "https:" && location.hostname !== "127.0.0.1") {
-        location.protocol = "https:";
-        bustPhotoCache()
+    if (location.protocol === "http:" && location.hostname !== "127.0.0.1") {
+        window.location = document.URL.replace("http://", "https://")
     }
-});
+    bustPhotoCache()
