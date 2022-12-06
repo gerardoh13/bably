@@ -143,7 +143,7 @@ def set_reminder(feed_id, tz):
         if feed_id != latest_feed[0].id:
             return
         mins = (reminder.hours * 60) + reminder.minutes
-        rd = datetime.fromtimestamp(feed.fed_at) + timedelta(minutes=mins)
+        rd = datetime.utcfromtimestamp(feed.fed_at) + timedelta(minutes=mins)
 
         next = rd.time().replace(tzinfo=ZoneInfo(tz))
         start = time.fromisoformat(reminder.start)
