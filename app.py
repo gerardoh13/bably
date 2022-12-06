@@ -132,7 +132,7 @@ def check_notification_times(start, next, cutoff):
     return start < next < cutoff
 
 
-def set_reminder(feed_id):
+def set_reminder(feed_id, tz):
     """if reminders are enabled, and reminders fall outside of the do not disturb period, creates a job to send a notification
     at the next requested time"""
     reminder = Reminder.query.get_or_404(g.user.reminders[0].id)
@@ -145,7 +145,7 @@ def set_reminder(feed_id):
         mins = (reminder.hours * 60) + reminder.minutes
         rd = datetime.fromtimestamp(feed.fed_at) + timedelta(minutes=mins)
 
-        next = rd.time()
+        next = rd.time().replace(tzinfo=ZoneInfo(tz))
         start = time.fromisoformat(reminder.start)
         cutoff = time.fromisoformat(reminder.cutoff)
         if reminder.cutoff_enabled:
@@ -319,8 +319,9 @@ def show_feed_form():
         )
         db.session.add(new_feed)
         db.session.commit()
+        tz = data.get("tz")
         if g.user.reminders[0].enabled:
-            set_reminder(new_feed.id)
+            set_reminder(new_feed.id, tz)
         response_json = jsonify(feed=new_feed.serialize())
         return (response_json, 201)
     else:

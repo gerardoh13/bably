@@ -19,12 +19,13 @@ document.getElementById('feedForm').addEventListener("submit", async (e) => {
     e.preventDefault()
     method = document.querySelector('input[name="method"]:checked').value
     let fed_at = (new Date(document.getElementById('fed_at').value).getTime()) / 1000
+    let tz = Intl.DateTimeFormat().resolvedOptions().timeZone
     if (method == "bottle"){
         let amount = parseFloat(document.getElementById("amount").value)
-        newFeed = {fed_at, amount, method}
+        newFeed = {fed_at, amount, method, tz}
     } else {
         let duration = parseInt(document.getElementById("duration").value)
-        newFeed = {fed_at, duration, method}
+        newFeed = {fed_at, duration, method, tz}
     }
     const newFeedRes = await axios.post("/feeds", {...newFeed})
     if (newFeedRes.status === 201){
