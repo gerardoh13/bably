@@ -155,7 +155,7 @@ def set_reminder(feed_id):
     msg = f"Time to feed {g.infant.first_name}"
     user = g.user.email
     scheduler.add_job(id=f"feed{feed_id}", func=push_notification, trigger="date", args=[
-                      msg, user, start.isoformat(), cutoff.isoformat(), rd.isoformat()], run_date=rd)
+                      msg, user, start.isoformat(), cutoff.isoformat(), next.isoformat()], run_date=rd)
 
 # ---------------------------------------------USERS/INFANTS------------------------------------------------
 def do_login(user):
