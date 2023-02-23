@@ -1,4 +1,4 @@
-# [Bably](bably.herokuapp.com)
+# [Bably](https://bably.herokuapp.com)
 
 ## Bably is a tool to help parents keep track of their baby's feeding times as well as get reminders for the next feeding time.
 ## Bably also provides developmental mlestones parents should expect to see from ages 2 months to 12 months. This data comes from the [CDC Developmental Guidelines](https://www.cdc.gov/ncbddd/actearly/milestones/index.html) for infants. 
